@@ -11,9 +11,11 @@ trap "
 
 # Resolve paths needed to be accessed from within temporary location.
 readonly input="$(realpath $1)"
+export FONTCONFIG_FILE="$(realpath "${BASH_SOURCE[0]%%/*}")/fonts.conf"
 cd "$tmpdir"
 
 # Extract multiplexed components.
+ffmpeg -dump_attachment:t '' -i "$input"
 ffmpeg -i "$input" -map 0:s:0 sub.ass
 
 # Compile video.
