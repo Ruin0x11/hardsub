@@ -30,7 +30,21 @@ then
   exit 0
 fi
 
-# Prepare temporary directory to unpack demultiplexed components to.
+# Prepare colors. Stolen from Arch Linux' pacman project,
+# more specifically the message utils for makepkg.
+if tput setaf 0 &>/dev/null
+then
+  readonly reset="$(tput sgr0)"
+  readonly bold="$(tput bold)"
+else
+  readonly reset="\e[0m"
+  readonly bold="\e[1m"
+fi
+msg() {
+  echo "${bold}$1${reset}"
+}
+
+msg 'Prepare workspace.'
 readonly tmpdir="$(mktemp -d --tmpdir hardsub.XXXXXXXXXX)"
 export FONTCONFIG_FILE="$(realpath "${BASH_SOURCE[0]%%/*}")/fonts.conf"
 trap "
@@ -39,9 +53,9 @@ trap "
 " EXIT
 cd "$tmpdir"
 
-# Extract multiplexed components.
+msg 'Extract multiplexed components.'
 ffmpeg -dump_attachment:t '' -i "$input"
 ffmpeg -i "$input" -map 0:s:0 sub.ass
 
-# Compile video.
+msg 'Compile video.'
 ffmpeg -i "$input" -vf ass=sub.ass -sn "${input%.*}.hardsubbed.${input##*.}"
