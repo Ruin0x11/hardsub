@@ -3,14 +3,16 @@
 # Parse options.
 while [ $OPTIND -le $# ]
 do
-  if getopts 'h' argument
+  if getopts 'hq' argument
   then
     case $argument in
       h)
         echo "usage: $0 [options] <video>"
         echo 'Convert softsubs to hardsubs.'
         echo ' -h  only shows this help text'
+        echo ' -q  do not show short-running ffmpeg output'
         exit ;;
+      q) quiet=true ;;
       \?) exit 1 ;;
     esac
   else
@@ -32,13 +34,21 @@ fi
 
 # Prepare colors. Stolen from Arch Linux' pacman project,
 # more specifically the message utils for makepkg.
-if tput setaf 0 &>/dev/null
+if [ -z ${quiet++} ]
 then
-  readonly reset="$(tput sgr0)"
-  readonly bold="$(tput bold)"
+  readonly target="/dev/stdout"
+  if tput setaf 0 &>/dev/null
+  then
+    readonly reset="$(tput sgr0)"
+    readonly bold="$(tput bold)"
+  else
+    readonly reset="\e[0m"
+    readonly bold="\e[1m"
+  fi
 else
-  readonly reset="\e[0m"
-  readonly bold="\e[1m"
+  readonly reset=
+  readonly bold=
+  readonly target="/dev/null"
 fi
 msg() {
   echo "${bold}$1${reset}"
@@ -54,8 +64,8 @@ trap "
 cd "$tmpdir"
 
 msg 'Extract multiplexed components.'
-ffmpeg -dump_attachment:t '' -i "$input"
-ffmpeg -i "$input" -map 0:s:0 sub.ass
+ffmpeg -dump_attachment:t '' -i "$input" 2>"$target"
+ffmpeg -i "$input" -map 0:s:0 sub.ass 2>"$target"
 
 msg 'Compile video.'
 ffmpeg -i "$input" -vf ass=sub.ass -sn "${input%.*}.hardsubbed.${input##*.}"
