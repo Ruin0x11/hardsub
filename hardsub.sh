@@ -3,16 +3,25 @@
 # Parse options.
 while [ $OPTIND -le $# ]
 do
-  if getopts 'hq' argument
+  if getopts 'hqs:' argument
   then
     case $argument in
       h)
         echo "usage: $0 [options] <video>"
         echo 'Convert softsubs to hardsubs.'
-        echo ' -h  only shows this help text'
-        echo ' -q  do not show short-running ffmpeg output'
+        echo ' -h           only shows this help text'
+        echo ' -q           do not show short-running ffmpeg output'
+        echo ' -s <number>  choose subtitle stream'
         exit ;;
       q) quiet=true ;;
+      s)
+        if [[ "$OPTARG" =~ ^[0-9]+$ ]]
+        then
+          stream=$OPTARG
+        else
+          echo "$0: stream must be numeric" >&2
+          exit 1
+        fi ;;
       \?) exit 1 ;;
     esac
   else
@@ -65,7 +74,7 @@ cd "$tmpdir"
 
 msg 'Extract multiplexed components.'
 ffmpeg -dump_attachment:t '' -i "$input" 2>"$target"
-ffmpeg -i "$input" -map 0:s:0 sub.ass 2>"$target"
+ffmpeg -i "$input" -map "0:s:${stream-0}" sub.ass 2>"$target"
 
 msg 'Compile video.'
 ffmpeg -i "$input" -vf ass=sub.ass -sn "${input%.*}.hardsubbed.${input##*.}"
