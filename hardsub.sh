@@ -73,7 +73,18 @@ trap "
 cd "$tmpdir"
 
 msg 'Extract multiplexed components.'
-ffmpeg -dump_attachment:t '' -i "$input" 2>"$target"
+ffmpeg -dump_attachment:t '' -i "$input" 2>&1 | \
+  if [ -z ${stream++} ]
+  then
+    if [ 1 -lt "$(tee "$target" | grep \
+      '^    Stream #0:[[:digit:]]\+[^:]*: Subtitle: ass' | wc -l)" ]
+    then
+      echo "Multiple subtitles detected." \
+        "Choose one with the -s option to silence this warning." >&2
+    fi
+  else
+    cat > "$target"
+  fi
 ffmpeg -i "$input" -map "0:s:${stream-0}" sub.ass 2>"$target"
 
 msg 'Compile video.'
