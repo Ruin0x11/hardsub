@@ -14,14 +14,7 @@ do
         echo ' -s <number>  choose subtitle stream'
         exit ;;
       q) quiet=true ;;
-      s)
-        if [[ "$OPTARG" =~ ^[0-9]+$ ]]
-        then
-          stream=$OPTARG
-        else
-          echo "$0: stream must be numeric" >&2
-          exit 1
-        fi ;;
+      s) stream=$OPTARG ;;
       \?) exit 1 ;;
     esac
   else
@@ -82,9 +75,27 @@ then
       "Choose one with the -s option to silence this warning." >&2
   fi
 else
-  cat > "$target"
+  if [[ "$stream" =~ ^[0-9]+$ ]]
+  then
+    stream='s:0'
+    cat > "$target"
+  else
+    declare -A streams
+    while read number title
+    do
+      streams["$title"]=$number
+    done < <(pcregrep -M -o1 -o3 \
+      "(?s)^ {4}Stream #0:(\\d+)[^:]*: Subtitle: ass( \\(default\\))?$(
+      )\n.*?^ {6}title *:( [^\n]+)")
+    stream="${streams["$stream"]}"
+    if [ -z ${stream:++} ]
+    then
+      echo "No subtitle with given title found." >&2
+      exit 1
+    fi
+  fi
 fi < <(ffmpeg -dump_attachment:t '' -i "$input" 2>&1)
-ffmpeg -i "$input" -map "0:s:${stream-0}" sub.ass 2>"$target"
+ffmpeg -i "$input" -map "0:${stream-s:0}" sub.ass 2>"$target"
 
 msg 'Compile video.'
 ffmpeg -i "$input" -vf ass=sub.ass -sn "${input%.*}.hardsubbed.${input##*.}"
