@@ -3,7 +3,7 @@
 # Parse options.
 while [ $OPTIND -le $# ]
 do
-  if getopts 'hqs:' argument
+  if getopts 'hqs:l' argument
   then
     case $argument in
       h)
@@ -12,9 +12,11 @@ do
         echo ' -h           only shows this help text'
         echo ' -q           do not show short-running ffmpeg output'
         echo ' -s <number>  choose subtitle stream'
+        echo ' -l           list available subtitle streams'
         exit ;;
       q) quiet=true ;;
       s) stream=$OPTARG ;;
+      l) stream=list ;;
       \?) exit 1 ;;
     esac
   else
@@ -32,6 +34,20 @@ if [ -z ${input++} ]
 then
   echo "$0: no input file given" >&2
   exit 0
+fi
+
+# List.
+if [ "$stream" = list ]
+then
+  i=0
+  while read title
+  do
+    echo "$i: $title"
+    let i++
+  done < <(ffprobe "$input" 2>&1 | pcregrep -M -o3 \
+    "(?s)^ {4}Stream #0:(\\d+)[^:]*: Subtitle: ass( \\(default\\))?$(
+    )\n.*?^ {6}title *:( [^\n]+)")
+  exit
 fi
 
 # Prepare colors. Stolen from Arch Linux' pacman project,
