@@ -3,18 +3,32 @@
 # Parse options.
 while [ $OPTIND -le $# ]
 do
-  if getopts 'hqs:l' argument
+  if getopts 'hvs:l' argument
   then
     case $argument in
       h)
         echo "usage: $0 [options] <video>"
         echo 'Convert softsubs to hardsubs.'
         echo ' -h           only shows this help text'
-        echo ' -q           do not show short-running ffmpeg output'
+        echo ' -v           show short-running ffmpeg output'
         echo ' -s <number>  choose subtitle stream'
         echo ' -l           list available subtitle streams'
         exit ;;
-      q) quiet=true ;;
+      v)
+        if [ -z ${target++} ]
+        then
+          # Prepare colors. Stolen from Arch Linux' pacman project,
+          # more specifically the message utils for makepkg.
+          readonly target="/dev/stderr"
+          if tput setaf 0 &>/dev/null
+          then
+            readonly reset="$(tput sgr0)"
+            readonly bold="$(tput bold)"
+          else
+            readonly reset="\e[0m"
+            readonly bold="\e[1m"
+          fi
+        fi ;;
       s) stream=$OPTARG ;;
       l) stream=list ;;
       \?) exit 1 ;;
@@ -50,24 +64,6 @@ then
   exit
 fi
 
-# Prepare colors. Stolen from Arch Linux' pacman project,
-# more specifically the message utils for makepkg.
-if [ -z ${quiet++} ]
-then
-  readonly target="/dev/stdout"
-  if tput setaf 0 &>/dev/null
-  then
-    readonly reset="$(tput sgr0)"
-    readonly bold="$(tput bold)"
-  else
-    readonly reset="\e[0m"
-    readonly bold="\e[1m"
-  fi
-else
-  readonly reset=
-  readonly bold=
-  readonly target="/dev/null"
-fi
 msg() {
   echo "${bold}$1${reset}"
 }
@@ -84,7 +80,7 @@ cd "$tmpdir"
 msg 'Extract multiplexed components.'
 if [ -z ${stream++} ]
 then
-  if [ 1 -lt "$(tee "$target" | grep \
+  if [ 1 -lt "$(tee "${target-/dev/null}" | grep \
     '^    Stream #0:[[:digit:]]\+[^:]*: Subtitle: ass' | wc -l)" ]
   then
     echo "Multiple subtitles detected." \
@@ -94,7 +90,7 @@ else
   if [[ "$stream" =~ ^[0-9]+$ ]]
   then
     stream='s:0'
-    cat > "$target"
+    cat > "${target-/dev/null}"
   else
     declare -A streams
     while read number title
@@ -111,7 +107,7 @@ else
     fi
   fi
 fi < <(ffmpeg -dump_attachment:t '' -i "$input" 2>&1)
-ffmpeg -i "$input" -map "0:${stream-s:0}" sub.ass 2>"$target"
+ffmpeg -i "$input" -map "0:${stream-s:0}" sub.ass 2>"${target=/dev/null}"
 
 msg 'Compile video.'
 ffmpeg -i "$input" -vf ass=sub.ass -sn "${input%.*}.hardsubbed.${input##*.}"
