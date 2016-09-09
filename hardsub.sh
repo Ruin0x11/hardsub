@@ -3,7 +3,7 @@
 # Parse options.
 while [ $OPTIND -le $# ]
 do
-  if getopts 'hvs:lo:' argument
+  if getopts 'hvs:lo:()' argument
   then
     case $argument in
       h)
@@ -14,6 +14,7 @@ do
         echo ' -s <number>  choose subtitle stream'
         echo ' -l           list available subtitle streams'
         echo ' -o <file>    output file name'
+        echo ' -( ... -)    arguments to pass to encoding ffmpeg'
         exit ;;
       v)
         if [ -z ${target++} ]
@@ -33,6 +34,14 @@ do
       s) stream=$OPTARG ;;
       l) stream=list ;;
       o) output=$(realpath "$OPTARG") ;;
+      \()
+        while [ "${!OPTIND}" != '-)' ]
+        do
+          pass+=("${!OPTIND}")
+          let OPTIND++
+        done
+        let OPTIND++
+        ;;
       \?) exit 1 ;;
     esac
   else
@@ -112,5 +121,5 @@ fi < <(ffmpeg -dump_attachment:t '' -i "$input" 2>&1)
 ffmpeg -i "$input" -map "0:${stream-s:0}" sub.ass 2>"${target=/dev/null}"
 
 msg 'Compile video.'
-ffmpeg -i "$input" -vf ass=sub.ass -sn \
+ffmpeg -i "$input" -vf ass=sub.ass -sn "${pass[@]}" \
   "${output-${input%.*}.hardsubbed.${input##*.}}"
