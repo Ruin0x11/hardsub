@@ -37,11 +37,19 @@ do
       \()
         while [ "${!OPTIND}" != '-)' ]
         do
+          if [ $OPTIND -ge $# ]
+          then
+            echo "$0: -( without -)"
+            exit 1
+          fi
           pass+=("${!OPTIND}")
           let OPTIND++
         done
         let OPTIND++
         ;;
+      \))
+        echo "$0: -) without -("
+        exit 1 ;;
       \?) exit 1 ;;
     esac
   else
