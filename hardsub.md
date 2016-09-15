@@ -34,7 +34,9 @@ This script prepares a file for these devices by re-encoding one soft subtitle s
   - `-o` _output_:
     Place the resulting video with the given file name.
 
-    Without this option, the output file name will be the same as the input, with the marker *.hardsubbed* inserted just before the extension.
+    The templates `$path`, `$file`, `$name` and `$ext` may be included in the argument to this option an are interpreted respectively as the file path, the the full file name, the basename and the extension of the input file.
+
+    Without this option, the output file defaults to `$name.hardsubbed.$ext`.
 
   - `-(` ... `-)`:
     To control how the video is created, options may be passed to the encoding ffmpeg(1) command by enclosing them in bracket arguments. Be aware that most shells like to interpret these as special characters and they thus most likely need to be escaped. Any argument found between them is passed to ffmpeg unaltered.
