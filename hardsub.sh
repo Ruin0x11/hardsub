@@ -127,10 +127,11 @@ else
     fi
   fi
 fi < <(ffmpeg -dump_attachment:t '' -i "$input" 2>&1)
-ffmpeg -i "$input" -map "0:${stream-s:0}" sub.ass 2>"${target=/dev/null}"
+readonly sub=$(mktemp -u XXXXXXXXXX.ass)
+ffmpeg -i "$input" -map "0:${stream-s:0}" "$sub" 2>"${target=/dev/null}"
 
 msg 'Compile video.'
 readonly name="${input##*/}"
-ffmpeg -i "$input" -vf ass=sub.ass -sn "${pass[@]}" "$(env - \
+ffmpeg -i "$input" -vf ass="$sub" -sn "${pass[@]}" "$(env - \
   file="$name" name="${name%.*}" ext="${name##*.}" \
   path="${input%%/*}" envsubst <<< "$output")"
