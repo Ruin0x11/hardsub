@@ -3,14 +3,14 @@ hardsub(1) -- burn soft subtitles into video
 
 ## SYNOPSIS
 
-`hardsub` [ `options` ] <`input`>
+`hardsub` [ `options` ] <`input` ...>
 
 
 ## DESCRIPTION
 
 Subtitles in videos can come in two flavors: As a separate stream, rendered over the video while playback, or already included in the video image. The former variant (soft) can be deactivated or switched freely, which is not possible with the latter (hard). While conversion of soft subtitles into their hardcoded counterpart strips this choice, it makes the video file accessible on more devices: Not all players understand complex subtitle formats, especially these with elaborate effects. And some hardware may not be powerful enough to render them in real time.
 
-This script prepares a file for these devices by re-encoding one soft subtitle stream of a given file into the video.
+This script prepares files for these devices by re-encoding one soft subtitle stream of each given file into the video.
 
 
 ## OPTIONS
@@ -29,7 +29,7 @@ This script prepares a file for these devices by re-encoding one soft subtitle s
     If this option is left out despite the input having multiple different subtitles to choose from, a warning will be issued.
 
   - `-l`:
-    List available subtitle streams for the `-s` option, with their title and numbers. No encoding will take place and all other options are ignored.
+    List subtitle streams for the `-s` option available in the first given file, with their title and numbers. No encoding will take place and all other options are ignored.
 
   - `-o` _output_:
     Place the resulting video with the given file name.
