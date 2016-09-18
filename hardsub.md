@@ -29,7 +29,7 @@ This script prepares files for these devices by re-encoding one soft subtitle st
     If this option is left out despite the input having multiple different subtitles to choose from, a warning will be issued.
 
   - `-l`:
-    List subtitle streams for the `-s` option available in the first given file, with their title and numbers. No encoding will take place and all other options are ignored.
+    List available subtitle streams for the `-s` option, with their title and numbers. No encoding will take place and all other options are ignored.
 
   - `-o` _output_:
     Place the resulting video with the given file name.

@@ -66,14 +66,22 @@ fi
 # List.
 if [ "$stream" = list ]
 then
-  i=0
-  while read title
+  for input in "${inputs[@]}"
   do
-    echo "$i: $title"
-    let i++
-  done < <(ffprobe "${inputs[0]}" 2>&1 | pcregrep -M -o3 \
-    "(?s)^ {4}Stream #0:(\\d+)[^:]*: Subtitle: ass( \\(default\\))?$(
-    )\n.*?^ {6}title *:( [^\n]+)")
+    echo "$input"
+    i=0
+    while read title
+    do
+      echo "$i: $title"
+      let i++
+    done < <(ffprobe "${input}" 2>&1 | pcregrep -M -o3 \
+      "(?s)^ {4}Stream #0:(\\d+)[^:]*: Subtitle: ass( \\(default\\))?$(
+      )\n.*?^ {6}title *:( [^\n]+)")
+    echo
+  done
+  # delete last, empty, line
+  tput cuu1
+  tput dl1
   exit
 fi
 
