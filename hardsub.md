@@ -3,7 +3,7 @@ hardsub(1) -- burn soft subtitles into video
 
 ## SYNOPSIS
 
-`hardsub` [ `options` ] <`input` ...>
+`hardsub` [ `options` ] [`input` ...]
 
 
 ## DESCRIPTION

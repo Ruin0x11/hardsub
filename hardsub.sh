@@ -7,7 +7,7 @@ do
   then
     case $argument in
       h)
-        echo "usage: $0 [options] <video ...>"
+        echo "usage: $0 [options] [video ...]"
         echo 'Convert softsubs to hardsubs.'
         echo ' -h           only shows this help text'
         echo ' -v           show short-running ffmpeg output'
@@ -57,11 +57,6 @@ do
     let OPTIND++
   fi
 done
-if [ -z ${inputs[@]++} ]
-then
-  echo "$0: no input file given" >&2
-  exit 0
-fi
 
 # List.
 if [ "$stream" = list ]
