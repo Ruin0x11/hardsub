@@ -22,7 +22,7 @@ This script prepares files for these devices by re-encoding one soft subtitle st
     Show the output of all short-running ffmpeg(1) subprocesses that are used to collect information about the video and extract streams and attachments. Without this option, only the encoding run is shown to report encoding progress.
 
   - `-s` _stream_:
-    Select the subtitle stream to use. Only the streams containing subtitles are counted, not all streams included in the given input file, starting at 0. If the number does not denote any existent stream, ffmpeg will issue an error.
+    Select the subtitle stream to use. Only the streams containing subtitles are counted, not all streams included in the given input file, starting at 0.
 
     The option alternatively accepts a name, which is interpreted as the title of a subtitle stream. If no subtitle has this name, this argument is regarded invalid and hardsub exits with an error.
 

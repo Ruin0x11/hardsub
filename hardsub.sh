@@ -127,7 +127,12 @@ do (
     fi
   fi < <(ffmpeg -dump_attachment:t '' -i "$input" 2>&1)
   readonly sub=$(mktemp -u XXXXXXXXXX.ass)
-  ffmpeg -i "$input" -map "0:${stream-s:0}" "$sub" 2>"${target=/dev/null}"
+  ffmpeg -i "$input" -map "0:${stream=s:0}" "$sub" 2>"${target=/dev/null}"
+  if ! [ -f "$sub" ]
+  then
+    echo "Subtitle #${stream#*:} cound not be found." >&2
+    exit 1
+  fi
 
   msg 'Compile video.'
   readonly name="${input##*/}"
